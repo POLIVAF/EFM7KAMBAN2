@@ -8,6 +8,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed": "node seed.js",
+    "test-crud": "node test-crud.js",
     "build:css": "tailwindcss -i src/input.css -o public/style.css",
     "watch:css": "tailwindcss -i src/input.css -o public/style.css --watch"
   },

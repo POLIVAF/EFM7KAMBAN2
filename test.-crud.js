@@ -20,20 +20,25 @@ async function testCRUD() {
 
     console.log("\n🟢 CREAR TARJETA")
 
-    const lista = await Lista.findOne()
+    const primeraLista = await Lista.findOne()
+
+    if (!primeraLista) {
+      throw new Error("No hay listas. Ejecuta seed.js primero.")
+    }
 
     const nuevaTarjeta = await Tarjeta.create({
       titulo: "Tarjeta CRUD",
       descripcion: "Creada desde test-crud",
       estado: "Pendiente",
-      listaId: lista.id
+      listaId: primeraLista.id
     })
 
+    console.log("\n🆕 TARJETA CREADA")
     console.table([nuevaTarjeta.toJSON()])
 
 
     /* =========================
-       LEER TABLERO
+       LEER TABLERO CON LISTAS Y TARJETAS
     ========================= */
 
     console.log("\n📖 LEER TABLERO CON LISTAS Y TARJETAS")
@@ -52,6 +57,7 @@ async function testCRUD() {
       descripcion: tablero.descripcion
     }])
 
+
     console.log("\n📑 LISTAS")
 
     const listas = tablero.Listas.map(lista => ({
@@ -61,6 +67,7 @@ async function testCRUD() {
     }))
 
     console.table(listas)
+
 
     console.log("\n🃏 TARJETAS")
 
@@ -77,6 +84,31 @@ async function testCRUD() {
 
 
     /* =========================
+       LEER USUARIO CON TABLEROS
+    ========================= */
+
+    console.log("\n👤 LEER USUARIO CON SUS TABLEROS")
+
+    const usuario = await Usuario.findOne({
+      include: Tablero
+    })
+
+    console.table([{
+      id: usuario.id,
+      nombre: usuario.nombre,
+      email: usuario.email
+    }])
+
+    console.table(
+      usuario.Tableros.map(t => ({
+        id: t.id,
+        nombre: t.nombre,
+        usuarioId: t.usuarioId
+      }))
+    )
+
+
+    /* =========================
        ACTUALIZAR
     ========================= */
 
@@ -84,11 +116,32 @@ async function testCRUD() {
 
     const tarjetaActualizar = await Tarjeta.findOne()
 
-    tarjetaActualizar.titulo = "Tarjeta ACTUALIZADA CRUD"
+    if (tarjetaActualizar) {
 
-    await tarjetaActualizar.save()
+      const estadoAntes = {
+        id: tarjetaActualizar.id,
+        titulo: tarjetaActualizar.titulo,
+        estado: tarjetaActualizar.estado
+      }
 
-    console.table([tarjetaActualizar.toJSON()])
+      await tarjetaActualizar.update({
+        titulo: "Tarjeta ACTUALIZADA CRUD",
+        estado: "Completada"
+      })
+
+      const estadoDespues = {
+        id: tarjetaActualizar.id,
+        titulo: tarjetaActualizar.titulo,
+        estado: tarjetaActualizar.estado
+      }
+
+      console.log("Antes:")
+      console.table([estadoAntes])
+
+      console.log("Después:")
+      console.table([estadoDespues])
+
+    }
 
 
     /* =========================
@@ -123,11 +176,13 @@ async function testCRUD() {
 
     console.log("\n🎯 PRUEBAS CRUD FINALIZADAS")
 
-    await sequelize.close()
-
   } catch (error) {
 
-    console.error("❌ Error:", error)
+    console.error("\n❌ Error en test-crud:", error.message)
+
+  } finally {
+
+    await sequelize.close()
 
   }
 
