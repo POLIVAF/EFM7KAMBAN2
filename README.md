@@ -39,5 +39,7 @@ src/
 ```Terminal
 npm install
 npm run dev
+npm run seed
+npm run test-crud
 
 
